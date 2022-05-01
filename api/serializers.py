@@ -4,14 +4,14 @@ from base.models import User, Project, IP
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email']
+        fields = '__all__'
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['name']
+        model = Project
+        fields = '__all__'
 
 class IPSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['ipAdress']
+        model = IP
+        fields = '__all__'
