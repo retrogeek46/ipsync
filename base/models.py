@@ -13,7 +13,7 @@ class Project(models.Model):
 
 class IP(models.Model):
     ipAddress = models.CharField(max_length=20)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    projectID = models.ForeignKey(Project, on_delete=models.CASCADE)
+    userID = models.ForeignKey(User, on_delete=models.CASCADE)
     createdOn = models.DateTimeField(auto_now_add=True)
     modifiedOn = models.DateTimeField(null=True)

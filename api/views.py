@@ -2,6 +2,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from base.models import User, Project, IP
 from .serializers import UserSerializer, ProjectSerializer, IPSerializer
+from datetime import datetime
+
 
 @api_view(['GET'])
 def getUser(request):
@@ -11,6 +13,7 @@ def getUser(request):
     serializer = UserSerializer(users, many=True)
     return Response(serializer.data)
 
+
 @api_view(['GET'])
 def getProject(request):
     # ipData = {'ipAddress': '192.168.1.4'}
@@ -19,39 +22,39 @@ def getProject(request):
     serializer = UserSerializer(users, many=True)
     return Response(serializer.data)
 
-# @api_view(['POST'])
-# def updateIP(request):
-#     # ipData = {'ipAddress': '192.168.1.4'}
-#     # print(request.data)
-#     # print(request.data['email'])
-#     # get user ID
-#     user = getUserFromEmail(request.data['email'])
-#     if user == -1:
-#         return Response(data={'message': message}, status=400)
-#     else:
-#         print(user)
-#     # userID = 
+
+@api_view(['POST'])
+def updateIP(request):
+    email, project = request.data['email'], request.data['project']
+    userID, projectID= getUserIDFromEmail(email), getProjectIDFromName(project)
+    if userID == -1 or projectID == -1:
+        message = 'Invalid user or project'
+        return Response(data={'error': message}, status=400)
+
+    # create data for inserting/updating db
+    data = {
+        'project_id': projectID,
+        'user_id': userID,
+        'ipAddress': request.data['ipAddress']
+    }
+    ip = getIPFromEmailProject(request.data['email'], request.data['project'])
+    if ip != -1:
+        # if ip exists, modified on will be added
+        data['modified_on'] = datetime.now()
     
-#     # serializer = IPSerializer(data=request.data)
-#         message = user
-#     # if serializer.is_valid():
-#     #     serializer.save()
-#     #     message = 'update successful'
-#     # else:
-#     #     message = 'update unsuccessful'
-#         return Response({'message': message})
+    print(type(data))
+    serializer = IPSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        message = 'update successful'
+    else:
+        message = f'update unsuccessful, ${serializer.errors}'
+    return Response({'message':message})
+    
+
 
 @api_view(['POST'])
 def getIP(request):
-    # print(request.data['email'])
-    # get user ID
-    # user = getUserFromEmail(request.data['email'])
-    # if user == -1:
-    #     return Response(data={'message': message}, status=400)
-    # else:
-    #     print(user)
-    #     message = user
-    #     return Response({'message': message})
     ip = getIPFromEmailProject(request.data['email'], request.data['project'])
     if ip == -1:
         message = 'Could not find IP for given email and project'
@@ -61,6 +64,7 @@ def getIP(request):
         message = ip
         return Response({'message': f'IP Address is ${message}'})
 
+
 def getUserIDFromEmail(emailID):
     users = User.objects.filter(email=emailID)
     if users.exists():
@@ -69,6 +73,7 @@ def getUserIDFromEmail(emailID):
     else:
         return -1
 
+
 def getProjectIDFromName(projectName):
     projects = Project.objects.filter(name=projectName)
     if projects.exists():
@@ -76,6 +81,7 @@ def getProjectIDFromName(projectName):
         return serializer.data[0]['id']
     else:
         return -1
+
 
 def getIPFromEmailProject(email, project):
     userID, projectID = getUserIDFromEmail(email), getProjectIDFromName(project)
